@@ -12,9 +12,14 @@ export const GET = async () => {
 
   //2. Display list of student
   // const students = await prisma...
+  const students = await prisma.student.findMany({
+    orderBy: {
+      studentId: 'asc', // 'asc' เรียงจากน้อยไปมาก, 'desc' เรียงจากมากไปน้อย
+    },
+  });
 
   return NextResponse.json<StudentGetResponse>({
-    students: [], //replace empty array with result from DB
+    students, //replace empty array with result from DB
   });
 };
 
@@ -32,14 +37,24 @@ export type StudentPostBody = Pick<
 export const POST = async (request: NextRequest) => {
   const body = (await request.json()) as StudentPostBody;
   const prisma = getPrisma();
-
+  try{
   //4. Add new Student data
-  // await prisma...
+    await prisma.student.create({
+      data: {
+        studentId: body.studentId,
+        firstName: body.firstName,
+        lastName: body.lastName,
+      },
+    });
+    
+    return NextResponse.json<StudentPostOKResponse>({ ok: true });
+  }catch (error){
+    return NextResponse.json<StudentPostErrorResponse>(
+        { ok: false, message: "Student Id already exists" },
+        { status: 400 }
+      );
+  }
+  
 
-  // return NextResponse.json<StudentPostErrorResponse>(
-  //   { ok: false, message: "Student Id already exists" },
-  //   { status: 400 }
-  // );
-
-  // return NextResponse.json<StudentPostOKResponse>({ ok: true });
+  
 };
